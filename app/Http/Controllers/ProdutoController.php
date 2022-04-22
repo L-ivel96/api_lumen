@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Produto;
 use Carbon\Carbon;
 use Exception;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class ProdutoController extends Controller
 {
@@ -169,7 +170,7 @@ class ProdutoController extends Controller
             if(!empty($dados)) {
                 $update = Produto::where('id', $request->id)->update($dados);
                 $resposta = array(
-                    'atualizado' => $update,
+                    'atualizado' => (Boolean) $update,
                     'mensagem' => $update ? "Produto atualizado com sucesso!" : "O produto especificado não foi encontrado."
                 );
             }
@@ -202,7 +203,7 @@ class ProdutoController extends Controller
     		$excluir = Produto::where('id', $request->id)->delete();
             
             $resposta = array(
-                'excluido' => $excluir,
+                'excluido' => (Boolean) $excluir,
                 'mensagem' => $excluir ? "Produto excluido com sucesso!" : "O produto especificado não existe."
             );
 
