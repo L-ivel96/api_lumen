@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Produto;
 use Carbon\Carbon;
+use Exception;
 
 class ProdutoController extends Controller
 {
@@ -15,23 +16,33 @@ class ProdutoController extends Controller
      */
     public function mostrar(Request $request, $id)
     {
-        $dados = Produto::where("id", "=", $id)->first();
-
-        //Processo de filtragem de dados a serem expostos e no formato desajado
-        $resposta = is_null($dados) ? array() : array(
-            'id' => $dados['id'],
-            'name' => $dados['name'],
-            'price' => $dados['price'],
-            'created_at' => $dados['created_at']->toDateTimeString(),
-        );
-        
-        return response()->json($resposta);
-
+        try {
+            $dados = Produto::where("id", "=", $id)->first();
+            
+            //Processo de filtragem de dados a serem expostos e no formato desajado
+            $resposta = is_null($dados) ? array() : array(
+                'id' => $dados['id'],
+                'name' => $dados['name'],
+                'price' => $dados['price'],
+                'created_at' => $dados['created_at']->toDateTimeString(),
+            );
+            
+            return response()->json($resposta);
+        }
+        catch(Exception $e) {
+            $resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
+        }
     }
 
     public function listar(Request $request)
     {
         $dados = $this->buscar($request);
+
+        if(isset($dados['erro']) && $dados['erro']) {
+            $resposta = $dados;
+            return response()->json($resposta, 500);
+        }
 
          //Processo de filtragem de dados a serem expostos e no formato desajado
          $resposta = array();
@@ -78,14 +89,13 @@ class ProdutoController extends Controller
                 $query->where("price", "<=", $request->max_price);
             }
 
-            //dd($query->toSql(), !empty($request->max_price), is_numeric($request->max_price), $request->max_price);
             $lista_produto = $query->get();
 
             return $lista_produto;
     	}
     	catch(\Exception $e)
     	{
-    		return 'Erro: '.$e->getMessage();
+    		return array('erro' => true, 'mensagem' => $e->getMessage());
     	}
     }
 
@@ -97,7 +107,12 @@ class ProdutoController extends Controller
             $price = $request->price;
 
             if(empty($request->name) || empty($price) || !is_numeric($price) ) {
-                throw new \Exception("Os parametros name({$request->name}) e price({$request->price}) são obrigatórios");  
+                $resposta = array(
+                    'cadastro' => false,
+                    'mensagem' => "Os parametros name({$request->name}) e price({$request->price}) são obrigatórios"
+                );
+    
+                return response()->json($resposta, 406);
             }
 
 	    	$dados = array(
@@ -118,7 +133,8 @@ class ProdutoController extends Controller
     	}
     	catch(\Exception $e)
     	{
-    		return 'Erro: '.$e->getMessage();
+    		$resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
     	}
     }
 
@@ -133,7 +149,12 @@ class ProdutoController extends Controller
     		if(
     			!is_numeric($request->id) || empty($request->id)
     		) {
-    			throw new \Exception("O id({$request->id}) é obrigatório");	
+                $resposta = array(
+                    'atualizado' => false,
+                    'mensagem' => "O id é um parametro obrigatório"
+                );
+    
+                return response()->json($resposta, 406);
     		}
 
             if(!empty($request->name)) {
@@ -157,13 +178,15 @@ class ProdutoController extends Controller
                     'atualizado' => false,
                     'mensagem' => "Nenhum dado foi enviado para atualizar!"
                 );
+                return response()->json($resposta, 406);
             }
 
             return response()->json($resposta);
     	}
     	catch(\Exception $e)
     	{
-    		return 'Erro: '.$e->getMessage();
+    		$resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
     	}
 
     }
@@ -187,7 +210,8 @@ class ProdutoController extends Controller
     	}
     	catch(\Exception $e)
     	{
-    		return 'Erro: '.$e->getMessage();
+    		$resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
     	}
     }
 
