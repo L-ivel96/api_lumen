@@ -8,7 +8,7 @@ Esta é uma aplicação CRUD de cadastro de pedidos e produtos, que possui seus 
     4. Como instalar o projeto
 
 # Informações do sistema
-  - Lumen Lumen 9.0.2 (Laravel Components ^9.0)
+  - Lumen 9.0.2 (Laravel Components ^9.0)
   - PHP 8.1.5
   - Apache 2.4
   - MySQL 5.7
@@ -122,9 +122,9 @@ Parametros: {
 ```
 
 ### **Cadastrar**
-Rota para cadastro de pedido, se não for informado a quantidade, por padrão é 1 e se não for informado o valor de desconto, por padrão é 0.
+Rota para cadastro de pedido, se não for informado a quantidade, por padrão é 1 e se não for informado o valor de desconto, por padrão é 0.  
 **Nota:** o valor de deconto pode ser numerico ou em %, exemplos ('100.30', '25', '30%', '15%'...)
-**Nota 2:** Os valores totais nunca poderão ser menores que zero, em caso de 100% de desconto ou valor de desconto maior que de produto, o total será 0.
+**Nota 2:** Os valores totais nunca poderão ser menores que zero, em caso de 100% de desconto ou valor de desconto maior que de produto, o total será 0.  
 **Nota 3:** Os valores são salvos na tabela pedido_item para que se tenha o registro histórico, pois produtos podem sofrer alterações de preços com o tempo.
 
 ```
