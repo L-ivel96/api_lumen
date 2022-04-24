@@ -34,7 +34,7 @@ class Pedidos extends Model
         'deleted_at'
     ];
 
-    public function pedido_item()
+    public function pedido_itens()
     {
         return $this->hasMany(PedidoItem::class, 'pedido_id', 'id');
     }
