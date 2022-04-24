@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Produto extends Model
+class Pedidos extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'produtos';
+    protected $table = 'pedidos';
     /**
      * The attributes that are mass assignable.
      *
      * @var string[]
      */
     protected $fillable = [
-        'name', 'price'
+        'amount'
     ];
 
     /**
@@ -36,6 +36,6 @@ class Produto extends Model
 
     public function pedido_item()
     {
-        return $this->hasMany(PedidoItem::class, 'produto_id', 'id');
+        return $this->hasMany(PedidoItem::class, 'pedido_id', 'id');
     }
 }
