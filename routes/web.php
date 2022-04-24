@@ -19,6 +19,15 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     
+    //Pedidos
+    $router->get('pedidos', 'PedidosController@listar');
+    $router->get('pedidos/{id}', 'PedidosController@mostrar');
+    $router->post('pedidos', 'PedidosController@cadastrar');
+    $router->put('pedidos', 'PedidosController@editar');
+    $router->put('pedidos/finalizar', 'PedidosController@finalizar_pedido');
+    $router->delete('pedidos', 'PedidosController@excluir');
+
+    //Produtos
     $router->get('produtos',  'ProdutoController@listar');
     $router->get('produtos/{id}',  'ProdutoController@mostrar');
     $router->post('produtos', 'ProdutoController@cadastrar');

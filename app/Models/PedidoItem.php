@@ -5,18 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Produto extends Model
+class PedidoItem extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'produtos';
+    protected $table = 'pedido_item';
     /**
      * The attributes that are mass assignable.
      *
      * @var string[]
      */
     protected $fillable = [
-        'name', 'price'
+        'produto_id',
+        'price',
+        'desconto',
+        'quantidade'
     ];
 
     /**
@@ -34,8 +37,17 @@ class Produto extends Model
         'deleted_at'
     ];
 
-    public function pedido_item()
+    public function pedido()
     {
-        return $this->hasMany(PedidoItem::class, 'produto_id', 'id');
+        return $this->belongsTo(Pedidos::class, 'id', 'pedido_id');
+    }
+
+    /*
+        A relação não deve ser usada como base de informações do produto devido 
+        a possiveis atualizações de preço dos produtos.
+    */
+    public function produto()
+    {
+        return $this->belongsTo(Pedidos::class, 'id', 'pedido_id');
     }
 }
