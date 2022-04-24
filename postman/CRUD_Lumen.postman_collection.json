@@ -1,0 +1,324 @@
+{
+	"info": {
+		"_postman_id": "3f5d78b0-fd88-4236-80d7-9be8eb7f727c",
+		"name": "CRUD - Lumen",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Produto - Listar",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produto - Mostrar",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos/1",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produto - Filtrar",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"\",\r\n    \"min_price\": \"0\",\r\n    \"max_price\": \"99999\",\r\n    \"id\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos_filtro",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos_filtro"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produto - Cadastrar",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"teste P4\",\r\n    \"price\": \"4.60\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produto - Editar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 4,\r\n    \"name\": \"teste P3 edit\",\r\n    \"price\": \"155.30\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produto - Excluir",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"4\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/produtos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido - Cadastrar",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"produtos\": [\r\n        {\r\n            \"quantidade\": 3,\r\n            \"desconto\": \"10%\"\r\n        },\r\n        {\r\n            \"id\": 2,\r\n            \"desconto\": \"60.60\"\r\n        },\r\n        {\r\n            \"id\": 2,\r\n            \"quantidade\": \"dois\",\r\n            \"desconto\": \"10\"\r\n        },\r\n        {\r\n            \"id\": 2,\r\n            \"quantidade\": 3,\r\n            \"desconto\": \"10\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido - Editar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id_pedido\": 4,\r\n    \"produtos\": [\r\n        {\r\n            \"id\": 2,\r\n            \"desconto_anterior\": \"10\",\r\n            \"quantidade\": 2,\r\n            \"desconto\": \"10\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido - Finalizar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id_pedido\": 36\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos/finalizar",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos",
+						"finalizar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido - Excluir",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id_pedido\": \"37\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido - Mostrar",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos/38",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos",
+						"38"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedido- Listar",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api_lumen.test/api/pedidos",
+					"protocol": "http",
+					"host": [
+						"api_lumen",
+						"test"
+					],
+					"path": [
+						"api",
+						"pedidos"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
