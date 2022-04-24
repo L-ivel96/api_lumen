@@ -21,6 +21,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     
     //Pedidos
     $router->post('pedidos', 'PedidosController@cadastrar');
+    $router->put('pedidos', 'PedidosController@editar');
 
     //Produtos
     $router->get('produtos',  'ProdutoController@listar');

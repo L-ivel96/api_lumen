@@ -102,7 +102,142 @@ class PedidosController extends Controller
     	}
     }
 
-    public function totais_pedido($produtos, $id_pedido = null) {
+    public function editar(Request $request) 
+    {
+        try
+    	{
+            $erros = array();
+            
+            $produtos = $request->produtos;
+            $id_pedido = $request->id_pedido;
+
+            if(empty($id_pedido) || empty($produtos) || !is_array($produtos) ) {
+                $resposta = array(
+                    'erro' => false,
+                    'mensagem' => "Os parametros id_pedido e produtos são obrigatórios, produtos deve conter uma lista (array) com os produtos"
+                );
+    
+                return response()->json($resposta, 406);
+            }
+
+            $pedido = Pedidos::find($id_pedido);
+
+            if(!$pedido) {
+                $resposta = array(
+                    'erro' => true,
+                    'mensagem' => "O Pedido ($id_pedido) não foi encontrado"
+                );
+    
+                return response()->json($resposta, 404);
+            }
+
+            if($pedido->finalizado) {
+                $resposta = array(
+                    'erro' => true,
+                    'mensagem' => "O Pedido ($id_pedido) já está finalizado, não é possivel editar"
+                );
+    
+                return response()->json($resposta, 406);
+            }
+            
+            $contador = 0;
+	    	foreach($produtos as $produto) {
+                if(empty($produto['id']) || !is_numeric($produto['id'])) {
+                    $erros[] = "O produto na posição $contador não está corretamente estruturado. id é um parametro obrigatório e deve ser numerico para inclusão de novos registros";
+                    continue;
+                }
+                
+                $produto_bd = Produto::find($produto['id']);
+
+                $item = array(
+                    'desconto' => $produto['desconto'] ?? 0
+                );
+
+                if(!$produto_bd) {
+                    $erros[] = "O produto na posição $contador não está disponível ou não existe";
+                    continue;
+                }
+
+                $desconto_anterior = $produto['desconto_anterior'] ?? 0;
+                $desconto = $this->calcula_desconto_item($item, $produto_bd->price, 1, $contador)['descontos'];
+                $id_linha = $produto['id'] ?? 0;
+                $dados_quantidade = $this->corrige_quantidade($produto['quantidade'], $contador);
+                $quantidade = $dados_quantidade['quantidade'];
+                $erros = array_merge($erros, $dados_quantidade['erros']);
+
+                $item_linha = PedidoItem::where('produto_id', $id_linha)
+                    ->where('pedido_id', $id_pedido)
+                    ->where('desconto', $desconto_anterior)
+                    ->first();
+                
+                $item_linha_existente = PedidoItem::where('produto_id', $id_linha)
+                ->where('pedido_id', $id_pedido)
+                ->where('desconto', $desconto)
+                ->first();
+                
+                if($item_linha) {
+                    $item_linha->desconto = $desconto;
+                    $item_linha->quantidade = $quantidade;
+
+                    $item_linha->save();
+                }
+                else if($item_linha_existente) {
+                    $item_linha_existente->desconto = $desconto;
+                    $item_linha_existente->quantidade = $quantidade;
+
+                    $item_linha_existente->save();
+                }
+                else {
+                    $novo_item = new PedidoItem;
+                    $novo_item->produto_id = $produto['id'];
+                    $novo_item->pedido_id = $id_pedido;
+                    $novo_item->price = $produto_bd['price'];
+                    $novo_item->desconto = $desconto;
+                    $novo_item->quantidade = $quantidade;
+
+                    $novo_item->save();
+                }
+
+                $contador++;
+            }
+            
+            $pedido = Pedidos::find($id_pedido);
+            $dados_itens_filtrados = Pedidos::pedido_item_com_total($id_pedido);
+
+            //Normaliza dados e mescla informações do pedido
+            $pedido_normalizado = array(
+                'id' => $pedido['id'],
+                'amount' => round($pedido['amount'], 2),
+                'created_at' => $pedido['created_at']->toDateTimeString(),
+                'items' => $dados_itens_filtrados
+            );
+            
+            $resposta = array(
+                'atualizado' => true,
+                'mensagem' => "Pedido atualizado com sucesso!",
+                'pedido' => $pedido_normalizado
+            );
+
+            if(!empty($dados_pedido['erros'])) {
+                $erros = array_merge($erros, $dados_pedido['erros']);
+            }
+
+            if(!empty($erros)) {
+                $resposta['erros'] = $erros;
+            }
+
+            return response()->json($resposta);
+
+    	}
+    	catch(\Exception $e)
+    	{
+    		$resposta = array('erro' => true, 'mensagem' => $e->getLine() . " | ". $e->getMessage());
+            return response()->json($resposta, 500);
+    	}
+    }
+
+    public function totais_pedido($produtos, $id_pedido = null) 
+    {
         $total_itens = 0;
         $total_descontos = 0;
 
@@ -163,7 +298,8 @@ class PedidosController extends Controller
         $valor_produto,
         $quantidade_produto,
         $posicao
-    ) {
+    ) 
+    {
         $total_descontos = 0;
         $valor_desconto = 0;
         $erros = [];
@@ -198,7 +334,8 @@ class PedidosController extends Controller
         ); 
     }
 
-    public function corrige_quantidade($quantidade, $posicao = 0) {
+    public function corrige_quantidade($quantidade, $posicao = 0) 
+    {
         $erros = array();
         $quantidade_produto = $quantidade;
             
@@ -213,7 +350,7 @@ class PedidosController extends Controller
         ); 
     }
 
-    public function mescla_produtos_iguais($produtos) {
+    public function mescla_produtos_iguais($produtos, $campos_obrigatorios = null) {
         $erros = array();
         //id_produto-desconto => posicao no array
         $lista_produtos = array();
@@ -224,10 +361,14 @@ class PedidosController extends Controller
         $contador_loop = 0;
 
         foreach($produtos as $chave => $produto) {
-            if(!isset($produto['id'])) {
-                $erros[] = "O produto na posição $contador_loop não está corretamente estruturado, o parametro id é obrigatório, realizar uma atualização do pedido com o produto desejado";
-                $contador_loop++;
-                continue;
+            $campos_obrigatorios = $campos_obrigatorios ?? array("id");
+
+            foreach($campos_obrigatorios as $campo) {
+                if(!isset($produto[$campo])) {
+                    $erros[] = "O produto na posição $contador_loop não está corretamente estruturado, o parametro $campo é obrigatório, realizar uma atualização do pedido com o produto desejado";
+                    $contador_loop++;
+                    continue 2;
+                }
             }
 
             $desconto_produto = $produto['desconto'] ?? "";
@@ -238,8 +379,6 @@ class PedidosController extends Controller
                 
                 $produtos_arrumados[$pos_arrumado]['quantidade'] = $this->corrige_quantidade($produtos_arrumados[$pos_arrumado]['quantidade'] ?? 1, $contador_loop)['quantidade'];
                 $produtos_arrumados[$pos_arrumado]['quantidade'] +=  $this->corrige_quantidade($produto['quantidade'] ?? 1, $contador_loop)['quantidade'];
-                $produtos_arrumados[$pos_arrumado]['desconto'] = $produtos_arrumados[$pos_arrumado]['desconto'] ?? 0;
-                $produtos_arrumados[$pos_arrumado]['desconto'] +=  $produto['desconto'] ?? 0;
                 $contador_loop++;
                 continue;
             }

@@ -38,4 +38,25 @@ class Pedidos extends Model
     {
         return $this->hasMany(PedidoItem::class, 'pedido_id', 'id');
     }
+
+    public static function pedido_item_com_total($id_pedido)
+    {
+        $pedido = Pedidos::find($id_pedido);
+
+        $dados_itens = $pedido->pedido_itens;
+        $dados_itens_filtrados = array();
+
+        foreach($dados_itens as $item) {
+            $valor_total = ($item['price'] * $item['quantidade']) - ($item['desconto'] * $item['quantidade']);
+            $valor_total = $valor_total < 0 ? 0 : $valor_total;
+            $dados_itens_filtrados[] = array(
+                'id' => $item['id'],
+                'product_id' => $item['produto_id'],
+                'quantity' => $item['quantidade'],
+                'amount' => round($valor_total,2),
+            );
+        }
+
+        return $dados_itens_filtrados;
+    }
 }
