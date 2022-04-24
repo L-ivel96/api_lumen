@@ -72,8 +72,8 @@ class PedidosController extends Controller
 
             //Normaliza dados e mescla informações do pedido
             $pedido_normalizado = array(
-                'id' => $pedido['id'],
-                'amount' => round($pedido['amount'], 2),
+                'id' => (int) $pedido['id'],
+                'amount' => (float) round($pedido['amount'], 2),
                 'created_at' => $pedido['created_at']->toDateTimeString(),
                 'items' => $dados_itens_filtrados
             );
@@ -201,13 +201,16 @@ class PedidosController extends Controller
                 $contador++;
             }
             
+            Pedidos::atualiza_total_pedido($pedido->id);
+
             $pedido = Pedidos::find($id_pedido);
+
             $dados_itens_filtrados = Pedidos::pedido_item_com_total($id_pedido);
 
             //Normaliza dados e mescla informações do pedido
             $pedido_normalizado = array(
-                'id' => $pedido['id'],
-                'amount' => round($pedido['amount'], 2),
+                'id' => (int) $pedido['id'],
+                'amount' => (float) round($pedido['amount'], 2),
                 'created_at' => $pedido['created_at']->toDateTimeString(),
                 'items' => $dados_itens_filtrados
             );
@@ -395,6 +398,142 @@ class PedidosController extends Controller
             'produtos' => $produtos_arrumados,
             'erros' => $erros
         ); 
+    }
+
+    public function excluir(Request $request)
+    {
+    	try
+    	{
+    		if(!is_numeric($request->id_pedido) || empty($request->id_pedido)) {
+    			throw new \Exception("O id_pedido é um parametro obrigatório)");
+    		}
+            $pedido = Pedidos::find($request->id_pedido);
+
+            if(!$pedido) {
+                $resposta = array('erro' => true, 'mensagem' => "O Pedido ({$request->id_pedido}) não existe");
+                return response()->json($resposta);
+            }
+
+            if($pedido->finalizado) {
+                $resposta = array('erro' => true, 'mensagem' => "O Pedido ({$request->id_pedido}) já está finalizado");
+                return response()->json($resposta);
+            }
+
+            $excluir_relacionados = PedidoItem::where('pedido_id', $request->id_pedido)->delete();
+            $pedido->delete();
+            
+            $resposta = array(
+                'excluido' => true,
+                'mensagem' => "Pedido excluido com sucesso!"
+            );
+
+            return response()->json($resposta);
+    	}
+    	catch(\Exception $e)
+    	{
+    		$resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
+    	}
+    }
+
+    public function finalizar_pedido(Request $request)
+    {
+    	try
+    	{
+    		if(!is_numeric($request->id_pedido) || empty($request->id_pedido)) {
+    			throw new \Exception("O id_pedido é um parametro obrigatório)");
+    		}
+            $pedido = Pedidos::find($request->id_pedido);
+
+            if(!$pedido) {
+                $resposta = array('erro' => true, 'mensagem' => "O Pedido ({$request->id_pedido}) não existe");
+                return response()->json($resposta);
+            }
+
+            if($pedido->finalizado) {
+                $resposta = array('erro' => true, 'mensagem' => "O Pedido ({$request->id_pedido}) já está finalizado");
+                return response()->json($resposta);
+            }
+
+            $pedido->finalizado = 1;
+            $pedido->save();
+            
+            $resposta = array(
+                'mensagem' => "Pedido finalizado com sucesso!"
+            );
+
+            return response()->json($resposta);
+    	}
+    	catch(\Exception $e)
+    	{
+    		$resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
+    	}
+    }
+
+    public function mostrar(Request $request, $id)
+    {
+        try {
+
+            $pedido = Pedidos::find($id);
+            
+            if(!$pedido) {
+                $resposta = array('erro' => true, 'mensagem' => "O Pedido ({$id}) não existe");
+                return response()->json($resposta);
+            }
+
+            $dados_itens_filtrados = Pedidos::pedido_item_com_total($pedido->id);
+
+            //Normaliza dados e mescla informações do pedido
+            $pedido_normalizado = array(
+                'id' => $pedido['id'],
+                'amount' => (float) round($pedido['amount'], 2),
+                'finalizado' => (bool) $pedido['finalizado'],
+                'created_at' => $pedido['created_at']->toDateTimeString(),
+                'items' => $dados_itens_filtrados
+            );
+            
+            return response()->json($pedido_normalizado);
+        }
+        catch(Exception $e) {
+            $resposta = array('erro' => true, 'mensagem' => $e->getMessage());
+            return response()->json($resposta, 500);
+        }
+    }
+
+    public function listar(Request $request)
+    {
+        $query = Pedidos::select();
+
+        if(!empty($request->min_price) && is_numeric($request->min_price)) {
+            $query->where("price", ">=", $request->min_price);
+        }
+        
+        if(!empty($request->max_price) && is_numeric($request->min_price)) {
+            $query->where("price", "<=", $request->max_price);
+        }
+
+        $dados = $query->get();
+
+        if(!$dados) {
+            $resposta = array('erro' => true, 'mensagem' => "Nenhum pedido encontrado");
+            return response()->json($resposta);
+        }
+
+         //Processo de filtragem de dados a serem expostos e no formato desajado
+         $resposta = array();
+            
+         foreach($dados as $produto) {
+             $linha = array(
+                 'id' => $produto['id'],
+                 'amount' => (float) $produto['amount'],
+                 'finalizado' => (bool) $produto['finalizado'],
+                 'created_at' => $produto['created_at']->toDateTimeString(),
+             );
+             $resposta[] = $linha;
+         }
+
+         return response()->json($resposta);
     }
 
 

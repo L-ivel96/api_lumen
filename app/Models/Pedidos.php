@@ -50,13 +50,33 @@ class Pedidos extends Model
             $valor_total = ($item['price'] * $item['quantidade']) - ($item['desconto'] * $item['quantidade']);
             $valor_total = $valor_total < 0 ? 0 : $valor_total;
             $dados_itens_filtrados[] = array(
-                'id' => $item['id'],
-                'product_id' => $item['produto_id'],
-                'quantity' => $item['quantidade'],
-                'amount' => round($valor_total,2),
+                'id' => (int) $item['id'],
+                'product_id' => (int) $item['produto_id'],
+                'quantity' => (int) $item['quantidade'],
+                'amount' => (float) round($valor_total,2),
             );
         }
 
         return $dados_itens_filtrados;
+    }
+
+    public static function atualiza_total_pedido($id_pedido)
+    {
+        $pedido = Pedidos::find($id_pedido);
+
+        $dados_itens = $pedido->pedido_itens;
+        $total_pedido = 0;
+
+        foreach($dados_itens as $item) {
+            $valor_total = ($item['price'] * $item['quantidade']) - ($item['desconto'] * $item['quantidade']);
+            $valor_total = $valor_total < 0 ? 0 : $valor_total;
+            $total_pedido += $valor_total;
+        }
+
+        $pedido->amount = $total_pedido;
+        $pedido->save();
+
+        return true;
+
     }
 }
